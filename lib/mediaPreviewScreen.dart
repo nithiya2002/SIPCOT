@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sipcot/surveyorflow/dashboard.dart';
+import 'package:sipcot/widgets/ImageLocationOverlay.dart';
 import 'package:video_player/video_player.dart';
 
 class MediaPreviewScreen extends StatefulWidget {
@@ -86,8 +87,8 @@ class _MediaPreviewScreenState extends State<MediaPreviewScreen> {
   
   @override
   Widget build(BuildContext context) {
-  
-    
+
+
     return Scaffold(
       appBar: AppBar(title: const Text("Media Preview")),
       body: Column(
@@ -169,6 +170,7 @@ class _MediaPreviewScreenState extends State<MediaPreviewScreen> {
                 : const Text("Select a media item to preview"),
           ),
         ],
+
       ),
     );
   }
@@ -290,34 +292,47 @@ class _MediaPreviewScreenState extends State<MediaPreviewScreen> {
       );
     }
   }
-  
+
   Widget _buildImagePreview() {
-    return Center(
-      child: Image(
-        image: NetworkImage(selectedMedia!),
-        fit: BoxFit.contain,
-        errorBuilder: (context, error, stackTrace) {
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 200,
-                height: 150,
-                color: Colors.grey.shade100,
-                child: const Center(
-                  child: Icon(
-                    Icons.broken_image,
-                    size: 50,
-                    color: Colors.grey,
+    return Stack(
+      children: [
+        Center(
+          child: Image(
+            image: NetworkImage(selectedMedia!),
+            fit: BoxFit.contain,
+            errorBuilder: (context, error, stackTrace) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 200,
+                    height: 150,
+                    color: Colors.grey.shade100,
+                    child: const Center(
+                      child: Icon(
+                        Icons.broken_image,
+                        size: 50,
+                        color: Colors.grey,
+                      ),
+                    ),
                   ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              const Text("Failed to load image"),
-            ],
-          );
-        },
-      ),
+                  const SizedBox(height: 16),
+                  const Text("Failed to load image"),
+                ],
+              );
+            },
+          ),
+        ),
+
+        // Location stamp overlay (call your custom widget here)
+        const ImageLocationOverlay(
+          latitude: 12.9345,
+          longitude: 77.6192,
+          address: "123 Street, City",
+          timestamp: "20-03-2025 15:22",
+        ),
+      ],
     );
   }
+
 }
