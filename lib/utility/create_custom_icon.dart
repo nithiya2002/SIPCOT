@@ -3,8 +3,10 @@ import 'dart:ui' as ui;
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:sipcot/utility/custom_logger.dart';
 
 class MapUtils {
+  final log = createLogger(MapUtils);
   static Future<BitmapDescriptor> createCustomIcon(String label) async {
     try {
       final ui.PictureRecorder pictureRecorder = ui.PictureRecorder();
