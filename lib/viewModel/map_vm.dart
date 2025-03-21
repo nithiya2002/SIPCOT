@@ -11,21 +11,22 @@ import 'package:sipcot/utility/create_custom_icon.dart';
 import 'package:turf/turf.dart' as turf;
 
 class MapViewModel extends ChangeNotifier {
-    VoidCallback? onNavigateToDetails;
+  VoidCallback? onNavigateToDetails;
   Set<Polygon> _polygons = {};
-   Set<Polygon> _polygonsSite = {};
+  Set<Polygon> _polygonsSite = {};
 
   Set<Marker> _markers = {};
   Set<Marker> _fieldPoints = {}; // For storing field points from your GeoJSON
   bool _showFieldPoints = true;
   bool _showSiteBoundary = true;
+  bool _isLoadingSiteBoundary = false; // Add loading state
   
-
   Set<Polygon> get polygons => _polygons;
   Set<Polygon> get polygonsSite => _showSiteBoundary ? _polygonsSite : {};
-   bool get showSiteBoundary => _showSiteBoundary;
+  bool get showSiteBoundary => _showSiteBoundary;
+  bool get isLoadingSiteBoundary => _isLoadingSiteBoundary;
 
-  Set<Marker> get markers => _markers; // Added
+  Set<Marker> get markers => _markers;
   Set<Marker> get fieldPoints => _showFieldPoints ? _fieldPoints : {};
   bool get showFieldPoints => _showFieldPoints;
 
@@ -36,15 +37,13 @@ class MapViewModel extends ChangeNotifier {
   }
 
   void toggleSiteBoundary(bool value){
-      _showSiteBoundary = value;
+    _showSiteBoundary = value;
     notifyListeners();
   }
 
-
-
-
-    Future<void> fetchFieldPoints() async {
+  Future<void> fetchFieldPoints() async {
     try {
+      print("Fetching field points...");
       // First try to load from SharedPreferences
       final prefs = await SharedPreferences.getInstance();
       String? savedData = prefs.getString('field_points_data');
@@ -53,17 +52,20 @@ class MapViewModel extends ChangeNotifier {
       
       if (savedData == null) {
         // If no saved data, fetch from API
+        print("No cached field points found, fetching from API...");
         final response = await http.get(Uri.parse('https://main.d35889sospji4x.amplifyapp.com/sipcot/data/villages/site_1_kangeyam/field_points.geojson'));
         
         if (response.statusCode == 200) {
           // Save to SharedPreferences for offline use
           await prefs.setString('field_points_data', response.body);
           jsonData = json.decode(response.body);
+          print("Field points fetched and cached successfully");
         } else {
-          throw Exception("Failed to load field points");
+          throw Exception("Failed to load field points: ${response.statusCode}");
         }
       } else {
         // Use the saved data
+        print("Using cached field points data");
         jsonData = json.decode(savedData);
       }
       
@@ -78,37 +80,18 @@ class MapViewModel extends ChangeNotifier {
   // Process the field points GeoJSON data
   Future<void> _processFieldPointsData(Map<String, dynamic> jsonData) async {
     try {
+      print("Processing field points data...");
       // Check if it's a valid GeoJSON FeatureCollection
       if (jsonData['type'] == 'FeatureCollection' &&
           jsonData['features'] is List) {
         Set<Marker> newFieldPoints = {};
         List features = jsonData['features'];
+        print("Found ${features.length} field point features");
 
         for (int i = 0; i < features.length; i++) {
           var feature = features[i];
           var properties = feature['properties'];
           var geometry = feature['geometry'];
-
-          void navigateToMediaScreen(
-            
-            Map<String, dynamic> properties,
-          ) {
-            List<String> mediaUrls = [];
-
-            // Collect all available images and videos
-            for (int i = 1; i <= 4; i++) {
-              if (properties["image_$i"] != null) {
-                mediaUrls.add(properties["image_$i"]);
-              }
-            }
-            if (properties["video_1"] != null)
-              mediaUrls.add(properties["video_1"]);
-            if (properties["video_2"] != null)
-              mediaUrls.add(properties["video_2"]);
-
-            // Navigate to the media preview screen
-           Get.to(MediaPreviewScreen(mediaUrls: mediaUrls));
-          }
 
           if (geometry['type'] == 'Point' && geometry['coordinates'] is List) {
             // Get coordinates (GeoJSON is [longitude, latitude])
@@ -124,41 +107,54 @@ class MapViewModel extends ChangeNotifier {
             BitmapDescriptor markerIcon = await MapUtils.getTriangleMarker(
               classification == 'agriculture' ? Colors.green : Colors.red,
             );
-          newFieldPoints.add(
-  Marker(
-    markerId: MarkerId('field_point_$pointId'),
-    position: position,
-    icon: markerIcon,
-    // Make InfoWindow visible by default
-    // infoWindow: InfoWindow(
-    //   title: "Point $pointId",
-    //   snippet: parkName,
-    // ),
-    onTap: () {
-      // Create media URLs list
-      List<String> mediaUrls = [];
-      
-      // Collect all available images and videos
-      for (int i = 1; i <= 4; i++) {
-        if (properties["image_$i"] != null) {
-          mediaUrls.add(properties["image_$i"]);
-        }
-      }
-      if (properties["video_1"] != null)
-        mediaUrls.add(properties["video_1"]);
-      if (properties["video_2"] != null)
-        mediaUrls.add(properties["video_2"]);
-
-
-
-      // Use Get.to() with a function parameter
-      Get.to(() => MediaPreviewScreen(mediaUrls: mediaUrls));
-    },
-  ),
-);
+            
+            // Create the list of media URLs
+            List<String> mediaUrls = [];
+            
+            // Collect all available images and videos
+            for (int i = 1; i <= 4; i++) {
+              if (properties["image_$i"] != null && properties["image_$i"].toString().isNotEmpty) {
+                mediaUrls.add(properties["image_$i"]);
+              }
+            }
+            
+            if (properties["video_1"] != null && properties["video_1"].toString().isNotEmpty) {
+              mediaUrls.add(properties["video_1"]);
+            }
+            
+            if (properties["video_2"] != null && properties["video_2"].toString().isNotEmpty) {
+              mediaUrls.add(properties["video_2"]);
+            }
+            
+            // Create the marker with proper onTap function
+            newFieldPoints.add(
+              Marker(
+                markerId: MarkerId('field_point_$pointId'),
+                position: position,
+                icon: markerIcon,
+                onTap: () {
+                  print("Marker tapped: Point $pointId, Media URLs: ${mediaUrls.length}");
+                  // Navigate directly without using a closure
+                  if (mediaUrls.isNotEmpty) {
+                    Get.to(() => MediaPreviewScreen(mediaUrls: mediaUrls));
+                  } else {
+                    // Show a snackbar if no media is available
+                    Get.snackbar(
+                      "No Media",
+                      "No images or videos available for this point",
+                      snackPosition: SnackPosition.BOTTOM,
+                      backgroundColor: Colors.red.withOpacity(0.8),
+                      colorText: Colors.white,
+                      duration: Duration(seconds: 3),
+                    );
+                  }
+                },
+              ),
+            );
           }
         }
 
+        print("Created ${newFieldPoints.length} field point markers");
         _fieldPoints = newFieldPoints;
         notifyListeners();
       }
@@ -167,56 +163,85 @@ class MapViewModel extends ChangeNotifier {
     }
   }
 
+  Future<void> fetchSiteBoundary() async {
+    if (_isLoadingSiteBoundary) return; // Prevent multiple concurrent calls
+    
+    _isLoadingSiteBoundary = true;
+    notifyListeners();
+    
+    const String boundaryUrl =
+        "https://main.d35889sospji4x.amplifyapp.com/sipcot/data/villages/site_1_kangeyam/boundary.geojson";
 
-Future<void> fetchSiteBoundary() async {
-  const String boundaryUrl =
-      "https://main.d35889sospji4x.amplifyapp.com/sipcot/data/villages/site_1_kangeyam/boundary.geojson";
+    try {
+      print("Fetching site boundary from: $boundaryUrl");
+      final response = await http.get(Uri.parse(boundaryUrl));
 
-  try {
-    final response = await http.get(Uri.parse(boundaryUrl));
+      if (response.statusCode == 200) {
+        print("Site boundary data received, length: ${response.body.length}");
+        Map<String, dynamic> jsonData = json.decode(response.body);
+        print("Site boundary JSON parsed: ${jsonData['type']}");
 
-    if (response.statusCode == 200) {
-      Map<String, dynamic> jsonData = json.decode(response.body);
+        if (jsonData['type'] == 'FeatureCollection' && jsonData['features'] is List) {
+          Set<Polygon> newPolygons = {};
+          List<dynamic> features = jsonData['features'];
+          print("Number of features: ${features.length}");
 
-      if (jsonData['type'] == 'FeatureCollection' && jsonData['features'] is List) {
-        Set<Polygon> newPolygons = {};
+          for (var feature in features) {
+            if (feature['geometry'] != null && 
+                feature['geometry']['type'] == 'Polygon' && 
+                feature['geometry']['coordinates'] != null) {
+              
+              List<dynamic> coordinates = feature['geometry']['coordinates'];
+              print("Processing polygon with ${coordinates.length} coordinate sets");
+              
+              // Since this is a single polygon, we take the first element
+              List<dynamic> polygonCoordinates = coordinates[0];
+              print("Number of polygon points: ${polygonCoordinates.length}");
 
-        for (var feature in jsonData['features']) {
-          if (feature['geometry']['type'] == 'Polygon') {
-            List<dynamic> coordinates = feature['geometry']['coordinates'];
-                  
-            // Since this is a single polygon, we take the first element
-            List<List<dynamic>> polygonCoordinates = coordinates[0];
+              List<LatLng> polygonPoints = [];
+              for (var point in polygonCoordinates) {
+                if (point is List && point.length >= 2) {
+                  // GeoJSON format is [longitude, latitude]
+                  double lng = point[0].toDouble();
+                  double lat = point[1].toDouble();
+                  polygonPoints.add(LatLng(lat, lng));
+                }
+              }
 
-            List<LatLng> polygonPoints = polygonCoordinates
-                .map((point) => LatLng(point[1] as double, point[0] as double)) // Ignore altitude
-                .toList();
-
-            newPolygons.add(
-              Polygon(
-                polygonId: PolygonId(feature['properties']['park_id'].toString()),
-                points: polygonPoints,
-                strokeWidth: 2,
-                strokeColor: Colors.deepPurple,
-                fillColor: Colors.deepPurple.withOpacity(0.3),
-              ),
-            );
+              if (polygonPoints.length > 2) { // Need at least 3 points for a valid polygon
+                print("Creating polygon with ${polygonPoints.length} points");
+                String polygonId = 'site_boundary_${feature['properties']?['park_id'] ?? DateTime.now().millisecondsSinceEpoch}';
+                
+                newPolygons.add(
+                  Polygon(
+                    polygonId: PolygonId(polygonId),
+                    points: polygonPoints,
+                    strokeWidth: 3,
+                    strokeColor: Colors.deepPurple,
+                    fillColor: Colors.deepPurple.withOpacity(0.3),
+                  ),
+                );
+              } else {
+                print("Not enough points for a valid polygon: ${polygonPoints.length}");
+              }
+            }
           }
+
+          print("Created ${newPolygons.length} site boundary polygons");
+          _polygonsSite = newPolygons;
+          notifyListeners();
         }
-
-        _polygonsSite = newPolygons;
-        notifyListeners();
+      } else {
+        print("Failed to fetch site boundary. Status code: ${response.statusCode}");
+        throw Exception("Failed to load site boundary: ${response.statusCode}");
       }
-    } else {
-      throw Exception("Failed to load site boundary");
+    } catch (e) {
+      print("Error fetching site boundary: $e");
+    } finally {
+      _isLoadingSiteBoundary = false;
+      notifyListeners();
     }
-  } catch (e) {
-    print("Error fetching site boundary: $e");
   }
-}
-
-
-  
 
   Future<void> fetchPolygonsFromGeoServer() async {
     const String geoServerUrl =
