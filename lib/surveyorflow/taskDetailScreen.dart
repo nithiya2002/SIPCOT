@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:sipcot/customImageUpload.dart';
+import 'package:sipcot/widgets/image_capture_section.dart';
 
 class TaskDetailScreen extends StatefulWidget {
   final Map<String, dynamic> task;
   final VoidCallback onCompleted;
 
-  const TaskDetailScreen({super.key, required this.task, required this.onCompleted});
+  const TaskDetailScreen({
+    super.key,
+    required this.task,
+    required this.onCompleted,
+  });
 
   @override
   _TaskDetailScreenState createState() => _TaskDetailScreenState();
@@ -14,8 +18,6 @@ class TaskDetailScreen extends StatefulWidget {
 class _TaskDetailScreenState extends State<TaskDetailScreen> {
   String status = "Pending";
   TextEditingController remarkController = TextEditingController();
-  
-  // Example values for lat & long (auto-populated)
   TextEditingController latController = TextEditingController();
   TextEditingController longController = TextEditingController();
 
@@ -67,27 +69,25 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Latitude & Longitude Fields
           buildTextField("Latitude", latController, readOnly: true),
           SizedBox(height: 10),
           buildTextField("Longitude", longController, readOnly: true),
           SizedBox(height: 20),
 
-          // Image Upload Section
           buildSectionTitle("Capture Images"),
-          buildImageUploadField(),
+          ImageCaptureSection(
+            latitude: latController.text,
+            longitude: longController.text,
+          ),
           SizedBox(height: 20),
 
-          // Video Capture Section
           buildSectionTitle("Capture Video"),
           buildVideoUploadField(),
           SizedBox(height: 20),
 
-          // Remark Input Field
           buildTextField("Remark", remarkController),
           SizedBox(height: 20),
 
-          // Status Dropdown
           buildSectionTitle("Status"),
           Container(
             padding: EdgeInsets.symmetric(horizontal: 12),
@@ -107,7 +107,6 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
           ),
           SizedBox(height: 30),
 
-          // Submit Button
           Center(
             child: ElevatedButton(
               onPressed: submitForm,
@@ -132,7 +131,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
     );
   }
 
-  Widget buildTextField(String label, TextEditingController controller, {bool readOnly = false}) {
+  Widget buildTextField(String label, TextEditingController controller,
+      {bool readOnly = false}) {
     return TextField(
       controller: controller,
       readOnly: readOnly,
@@ -142,28 +142,6 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
         filled: true,
         fillColor: Colors.grey.shade100,
       ),
-    );
-  }
-
-  Widget buildImageUploadField() {
-    return Column(
-      children: [
-        CustomImageUploadField(
-          initialImagePath: null,
-          text: "Upload Image 1",
-          onImageSelected: (file) {
-            print("Selected image: ${file.path}");
-          },
-        ),
-        SizedBox(height: 10),
-        CustomImageUploadField(
-          initialImagePath: null,
-          text: "Upload Image 2",
-          onImageSelected: (file) {
-            print("Selected image: ${file.path}");
-          },
-        ),
-      ],
     );
   }
 
