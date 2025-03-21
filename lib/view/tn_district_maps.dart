@@ -6,22 +6,30 @@ import 'package:flutter/services.dart' show rootBundle;
 
 class TnDistrictMaps extends StatefulWidget {
   const TnDistrictMaps({super.key});
+
   @override
   State<TnDistrictMaps> createState() => _TnDistrictMapsState();
 }
 
 class _TnDistrictMapsState extends State<TnDistrictMaps> {
-  GoogleMapController? _mapController;
   String _mapStyle = '';
+  late GoogleMapController mapController;
+
+  void _onMapCreated(GoogleMapController controller) {
+    mapController = controller;
+    mapController.setMapStyle(_mapStyle);
+  }
 
   @override
   void initState() {
     super.initState();
     _loadMapStyle();
-    Provider.of<MapViewModel>(
-      context,
-      listen: false,
-    ).fetchPolygonsFromGeoServer();
+    Provider.of<MapViewModel>(context, listen: false).fetchPolygonData();
+
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   final mapViewModel = Provider.of<MapViewModel>(context, listen: false);
+    //   mapViewModel.fetchPolygonData();
+    // });
   }
 
   Future<void> _loadMapStyle() async {
@@ -29,22 +37,37 @@ class _TnDistrictMapsState extends State<TnDistrictMaps> {
   }
 
   @override
+  void dispose() {
+    mapController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final mapViewModel = Provider.of<MapViewModel>(context);
+    LatLng? initialCameraPosition;
+    if (mapViewModel.polygons.isNotEmpty) {
+      final firstPolygon = mapViewModel.polygons.first.points;
+      if (firstPolygon.isNotEmpty) {
+        initialCameraPosition = firstPolygon.first;
+      }
+    } else {
+      initialCameraPosition = const LatLng(12.9826816, 80.2422784);
+    }
+
     return Scaffold(
-      appBar: AppBar(title: Text("Flutter Google Maps with GeoServer")),
+      appBar: AppBar(title: const Text('SIPCOT')),
       body: Consumer<MapViewModel>(
         builder: (context, mapViewModel, child) {
           return GoogleMap(
+            mapType: MapType.normal,
+            onMapCreated: _onMapCreated,
             initialCameraPosition: CameraPosition(
-              target: LatLng(12.9826816, 80.2422784), // Adjust to your location
-              zoom: 7,
+              target: initialCameraPosition!,
+              zoom: 10.0,
             ),
             polygons: mapViewModel.polygons,
-            markers: mapViewModel.markers, // Added
-            onMapCreated: (GoogleMapController controller) {
-              _mapController = controller;
-              _mapController!.setMapStyle(_mapStyle);
-            },
+            markers: mapViewModel.markers,
           );
         },
       ),

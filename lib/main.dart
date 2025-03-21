@@ -6,11 +6,8 @@ import 'package:sipcot/viewModel/map_vm.dart';
 void main() {
   runApp(
     MultiProvider(
-      providers: [ChangeNotifierProvider(create: (_) => MapViewModel())],
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        home: TnDistrictMaps(),
-      ),
+      providers: [ChangeNotifierProvider(create: (context) => MapViewModel())],
+      child: MaterialApp(home: TnDistrictMaps()),
     ),
   );
 }

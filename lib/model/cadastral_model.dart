@@ -1,30 +1,59 @@
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:sipcot/utility/custom_logger.dart';
-
 class CadastralModel {
-  final String surveyNo;
-  final List<List<LatLng>> polygons;
-  final log = createLogger(CadastralModel);
-  CadastralModel({required this.surveyNo, required this.polygons});
-  factory CadastralModel.fromGeoJson(Map<String, dynamic> feature) {
-    var properties = feature['properties'];
-    var geometry = feature['geometry'];
-    var coordinates = geometry['coordinates'];
-    List<List<LatLng>> polygons = [];
-    if (geometry['type'] == 'MultiPolygon') {
-      for (var polygon in coordinates) {
-        for (var ring in polygon) {
-          List<LatLng> polygonPoints =
-              ring.map<LatLng>((point) {
-                return LatLng(point[1], point[0]);
-              }).toList();
-          polygons.add(polygonPoints);
-        }
-      }
+  List<CadastralFeature> features = [];
+
+  CadastralModel.fromGeoJson(Map<String, dynamic> json) {
+    if (json['features'] != null) {
+      features =
+          (json['features'] as List)
+              .map((feature) => CadastralFeature.fromJson(feature))
+              .toList();
     }
-    return CadastralModel(
-      surveyNo: properties['survey_no'],
-      polygons: polygons,
-    );
   }
+}
+
+class CadastralFeature {
+  String type;
+  String id;
+  CadastralGeometry geometry;
+  CadastralProperties properties;
+
+  CadastralFeature.fromJson(Map<String, dynamic> json)
+    : type = json['type'] ?? 'Unknown',
+      id = json['id'] ?? 'Unknown',
+      geometry = CadastralGeometry.fromJson(json['geometry'] ?? {}),
+      properties = CadastralProperties.fromJson(json['properties'] ?? {});
+}
+
+class CadastralGeometry {
+  String type;
+  List<List<List<List<double>>>> coordinates;
+
+  CadastralGeometry.fromJson(Map<String, dynamic> json)
+    : type = json['type'] ?? 'Unknown',
+      coordinates =
+          (json['coordinates'] as List?)
+              ?.map(
+                (polygon) =>
+                    (polygon as List)
+                        .map(
+                          (ring) =>
+                              (ring as List)
+                                  .map(
+                                    (point) => (point as List).cast<double>(),
+                                  )
+                                  .toList(),
+                        )
+                        .toList(),
+              )
+              .toList() ??
+          [];
+}
+
+class CadastralProperties {
+  String surveyNo;
+  String villageName;
+
+  CadastralProperties.fromJson(Map<String, dynamic> json)
+    : surveyNo = json['survey_no'] ?? 'Unknown',
+      villageName = json['village_name'] ?? 'Unknown';
 }
