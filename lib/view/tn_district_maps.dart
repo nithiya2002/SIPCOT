@@ -37,6 +37,7 @@ class _TnDistrictMapsState extends State<TnDistrictMaps> {
     await Future.wait([
       mapViewModel.fetchPolygonsFromGeoServer(),
       mapViewModel.fetchFieldPoints(),
+      mapViewModel.fetchNewBoundary()
     ]);
     
     setState(() {
@@ -120,7 +121,8 @@ class _TnDistrictMapsState extends State<TnDistrictMaps> {
                 ),
                 polygons: {
                   ...mapViewModel.polygons,
-                  ...mapViewModel.polygonsSite, // This will be empty if showSiteBoundary is false
+                  ...mapViewModel.polygonsSite,
+                  ...mapViewModel.newBoundaryPolygons, // This will be empty if showSiteBoundary is false
                 },
                 markers: {...mapViewModel.markers, ...mapViewModel.fieldPoints},
                 onMapCreated: (GoogleMapController controller) {
@@ -203,7 +205,7 @@ class _TnDistrictMapsState extends State<TnDistrictMaps> {
                           Text('Show Points', style: TextStyle(fontSize: 12)),
                         ],
                       ),
-                      const SizedBox(height: 4), // Small spacing between toggles
+                     
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -218,6 +220,23 @@ class _TnDistrictMapsState extends State<TnDistrictMaps> {
                           ),
                           const SizedBox(width: 2),
                           Text('Site Boundary', style: TextStyle(fontSize: 12)),
+                        ],
+                      ),
+                    
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Transform.scale(
+                            scale: 0.6,
+                            child: Switch.adaptive(
+                              value: mapViewModel.showNewBoundary,
+                              onChanged: (value) {
+                                mapViewModel.toggleNewBoundary(value);
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 2),
+                          Text('new Boundary', style: TextStyle(fontSize: 12)),
                         ],
                       ),
                     ],
