@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:sipcot/surveyorflow/dashboard.dart';
-import 'package:sipcot/widgets/ImageLocationOverlay.dart';
 import 'package:video_player/video_player.dart';
 
 class MediaPreviewScreen extends StatefulWidget {
@@ -322,14 +321,6 @@ class _MediaPreviewScreenState extends State<MediaPreviewScreen> {
               );
             },
           ),
-        ),
-
-        // Location stamp overlay (call your custom widget here)
-        const ImageLocationOverlay(
-          latitude: 12.9345,
-          longitude: 77.6192,
-          address: "123 Street, City",
-          timestamp: "20-03-2025 15:22",
         ),
       ],
     );

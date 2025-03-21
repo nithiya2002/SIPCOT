@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sipcot/mediaPreviewScreen.dart';
+import 'package:sipcot/Screens/Image_capture_screen.dart';
 
 
 
@@ -17,13 +18,15 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: MediaPreviewScreen(
-      mediaUrls: [
-        "https://dnwrerqo5ddte.cloudfront.net/chn-ban/site-5-soorai-2/image-point-16/point-16-Image-1.jpg",
-        "https://dnwrerqo5ddte.cloudfront.net/chn-ban/site-5-soorai-2/image-point-16/point-16-video-1.mp4",
-        "https://dnwrerqo5ddte.cloudfront.net/chn-ban/site-5-soorai-2/image-point-16/point-16-Image-2.jpg",
-      ],
-    ),
+      home: const ImageCaptureScreen()
+    //   MediaPreviewScreen(
+    //
+    //   mediaUrls: [
+    //     "https://dnwrerqo5ddte.cloudfront.net/chn-ban/site-5-soorai-2/image-point-16/point-16-Image-1.jpg",
+    //     "https://dnwrerqo5ddte.cloudfront.net/chn-ban/site-5-soorai-2/image-point-16/point-16-video-1.mp4",
+    //     "https://dnwrerqo5ddte.cloudfront.net/chn-ban/site-5-soorai-2/image-point-16/point-16-Image-2.jpg",
+    //   ],
+    // ),
     );
   }
 }
