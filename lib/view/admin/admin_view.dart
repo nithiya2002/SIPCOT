@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:sipcot/viewModel/auth_view_model.dart';
 import 'package:sipcot/viewModel/map_vm.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
-class TnDistrictMaps extends StatefulWidget {
-  const TnDistrictMaps({super.key});
+class AdminView extends StatefulWidget {
+  const AdminView({super.key});
 
   @override
-  State<TnDistrictMaps> createState() => _TnDistrictMapsState();
+  State<AdminView> createState() => _AdminViewState();
 }
 
-class _TnDistrictMapsState extends State<TnDistrictMaps> {
+class _AdminViewState extends State<AdminView> {
   String _mapStyle = '';
   late GoogleMapController mapController;
   bool _isInitialized = false;
@@ -125,6 +126,12 @@ class _TnDistrictMapsState extends State<TnDistrictMaps> {
               mapViewModel.fetchCadastralData("SIPCOT");
             },
             tooltip: "Refresh Map Data",
+          ),
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () {
+              Provider.of<AuthViewModel>(context, listen: false).logout();
+            },
           ),
         ],
       ),
@@ -267,7 +274,7 @@ class _TnDistrictMapsState extends State<TnDistrictMaps> {
                             ),
                           ),
                           const SizedBox(width: 2),
-                          Text('Cascade', style: TextStyle(fontSize: 12)),
+                          Text('Cadastral Map', style: TextStyle(fontSize: 12)),
                         ],
                       ),
                     ],

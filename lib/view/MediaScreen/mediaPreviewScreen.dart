@@ -14,7 +14,7 @@ class _MediaPreviewScreenState extends State<MediaPreviewScreen> {
   String? selectedMedia;
   VideoPlayerController? _videoController;
   bool _isScreenReady = false;
-  Map<String, VideoPlayerController> _videoControllers = {};
+  final Map<String, VideoPlayerController> _videoControllers = {};
   final ScrollController _scrollController =
       ScrollController(); // Add this line
 
@@ -82,7 +82,9 @@ class _MediaPreviewScreenState extends State<MediaPreviewScreen> {
   @override
   void dispose() {
     _scrollController.dispose(); // Dispose the controller
-    _videoControllers.values.forEach((controller) => controller.dispose());
+    for (var controller in _videoControllers.values) {
+      controller.dispose();
+    }
     super.dispose();
   }
 

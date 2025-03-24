@@ -16,7 +16,7 @@ class MapUtils {
           text: label,
           style: TextStyle(
             fontSize: 24.0,
-            color: Colors.black,
+            color: Colors.white,
             fontWeight: FontWeight.bold,
           ),
         ),
