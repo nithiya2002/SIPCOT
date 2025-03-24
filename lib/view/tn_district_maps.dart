@@ -20,7 +20,7 @@ class _TnDistrictMapsState extends State<TnDistrictMaps> {
     GoogleMapController controller,
     MapViewModel mapviewmodel,
   ) {
-    mapController = controller!;
+    mapController = controller;
     mapController.setMapStyle(_mapStyle);
     if (mapviewmodel.polygonsSite.isNotEmpty) {
       Future.delayed(Duration(milliseconds: 500), () {
@@ -136,7 +136,7 @@ class _TnDistrictMapsState extends State<TnDistrictMaps> {
                 onMapCreated: (GoogleMapController controller) {
                   _onMapCreated(controller, mapViewModel);
                 },
-                mapType: MapType.normal,
+                mapType: MapType.satellite,
                 initialCameraPosition: CameraPosition(
                   target: initialCameraPosition!,
                   zoom: 10.0,

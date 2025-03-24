@@ -24,7 +24,7 @@ class MapViewModel extends ChangeNotifier {
 
   Set<Polygon> get polygons => _polygons;
   Set<Marker> get markers => _markers;
-  Set<Marker> get cascadeMakers => _cascade_markers;
+  Set<Marker> get cascadeMakers => _showCascadeBoundary ? _cascade_markers : {};
   String? get selectedDistrict => _selectedDistrict;
   Timer? _animationTimer;
   final bool _showDashedBoundary = true;
