@@ -6,7 +6,10 @@ import 'package:sipcot/utility/custom_logger.dart';
 
 class MapUtils {
   final log = createLogger(MapUtils);
-  static Future<BitmapDescriptor> createCustomIcon(String label) async {
+  static Future<BitmapDescriptor> createCustomIcon(
+    String label,
+    Color textColor, // Add a textColor parameter
+  ) async {
     try {
       final ui.PictureRecorder pictureRecorder = ui.PictureRecorder();
       final Canvas canvas = Canvas(pictureRecorder);
@@ -16,7 +19,7 @@ class MapUtils {
           text: label,
           style: TextStyle(
             fontSize: 24.0,
-            color: Colors.white,
+            color: textColor, // Use the provided textColor
             fontWeight: FontWeight.bold,
           ),
         ),

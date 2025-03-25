@@ -51,6 +51,7 @@ class _AdminViewState extends State<AdminView> {
       mapViewModel.fetchFieldPoints(),
       mapViewModel.fetchNewBoundary(),
       mapViewModel.fetchCadastralData("SIPCOT"),
+      mapViewModel.fetchFMBData("SIPCOT"),
     ]);
     setState(() {
       _isInitialized = true;
@@ -153,11 +154,13 @@ class _AdminViewState extends State<AdminView> {
                   ...mapViewModel.polygonsSite,
                   ...mapViewModel.newBoundaryPolygons,
                   ...mapViewModel.cascadeBoundaryPolygons,
+                  ...mapViewModel.fmbBoundaryPolygon,
                 },
                 markers: {
                   ...mapViewModel.markers,
                   ...mapViewModel.fieldPoints,
                   ...mapViewModel.cascadeMakers,
+                  ...mapViewModel.fmb_marker,
                 },
               );
             },
@@ -188,7 +191,6 @@ class _AdminViewState extends State<AdminView> {
             },
           ),
 
-          // Controls panel to toggle field points
           Positioned(
             top: 10,
             right: 10,
@@ -275,6 +277,23 @@ class _AdminViewState extends State<AdminView> {
                           ),
                           const SizedBox(width: 2),
                           Text('Cadastral Map', style: TextStyle(fontSize: 12)),
+                        ],
+                      ),
+
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Transform.scale(
+                            scale: 0.6,
+                            child: Switch.adaptive(
+                              value: mapViewModel.showFmbBoundary,
+                              onChanged: (value) {
+                                mapViewModel.toggleFMB(value);
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 2),
+                          Text('FMB Map', style: TextStyle(fontSize: 12)),
                         ],
                       ),
                     ],

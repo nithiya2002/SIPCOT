@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
+import 'package:sipcot/model/fmb_model.dart';
 import 'package:sipcot/model/polygon_model.dart';
 import 'package:sipcot/model/cadastral_model.dart';
 import 'package:sipcot/utility/create_custom_icon.dart';
@@ -60,6 +61,15 @@ class MapViewModel extends ChangeNotifier {
   Set<Marker> get fieldPoints => _showFieldPoints ? _fieldPoints : {};
   bool get showFieldPoints => _showFieldPoints;
 
+  // MARK: FMB Map
+  Set<Polygon> _fmb_polygon = {};
+  Set<Marker> _fmb_marker = {};
+  bool _showFmbBoundary = true;
+  Set<Marker> get fmb_marker => _showFmbBoundary ? _fmb_marker : {};
+  bool _isLoadingFMB = false;
+  Set<Polygon> get fmbBoundaryPolygon => _showFmbBoundary ? _fmb_polygon : {};
+  bool get showFmbBoundary => _showFmbBoundary;
+
   void clearMap() {
     _polygons.clear();
     _markers.clear();
@@ -87,6 +97,95 @@ class MapViewModel extends ChangeNotifier {
     } catch (e) {
       log.e("Error fetching Polygon data: $e");
     }
+  }
+
+  Future<void> fetchFMBData(String selectedDistrict) async {
+    if (_isLoadingFMB) return;
+    _isLoadingFMB = true;
+    notifyListeners();
+
+    final String wfsUrl =
+        "https://main.d35889sospji4x.amplifyapp.com/sipcot/data/villages/site_1_kangeyam/fmb.geojson"; // Replace with your FMB data URL
+
+    try {
+      final response = await http.get(Uri.parse(wfsUrl));
+      if (response.statusCode == 200) {
+        Map<String, dynamic> jsonData = json.decode(response.body);
+        _processFMBData(jsonData);
+      } else {
+        throw Exception("Failed to load FMB data");
+      }
+    } catch (e) {
+      log.e("Error fetching FMB data: $e");
+    } finally {
+      _isLoadingFMB = false;
+      notifyListeners();
+    }
+  }
+
+  void _processFMBData(Map<String, dynamic> jsonData) async {
+    Set<Polygon> fetchedPolygons = {};
+    Set<Marker> fetchedMarkers = {};
+
+    FMBModel fmbData = FMBModel.fromGeoJson(jsonData); // Use your FMB model
+
+    for (int i = 0; i < fmbData.features.length; i++) {
+      var feature = fmbData.features[i];
+      var coordinates = feature.geometry.coordinates;
+      var properties = feature.properties;
+
+      if (coordinates.isNotEmpty) {
+        for (var polygon in coordinates) {
+          for (var ring in polygon) {
+            List<LatLng> polygonPoints =
+                ring
+                    .map<LatLng>((point) => LatLng(point[1], point[0]))
+                    .toList();
+
+            fetchedPolygons.add(
+              Polygon(
+                polygonId: PolygonId('fmb_polygon_$i'),
+                points: polygonPoints,
+                strokeWidth: 2,
+                strokeColor: Colors.black, // Customize color if needed
+                fillColor: Colors.blue.withOpacity(
+                  0.3,
+                ), // Customize color if needed
+                consumeTapEvents: true,
+              ),
+            );
+
+            // Create a marker for the polygon.
+            LatLng labelPosition = _findLabelPosition(polygonPoints);
+            String labelText = properties.kide;
+            BitmapDescriptor customIcon = await MapUtils.createCustomIcon(
+              labelText,
+              Colors.black,
+            );
+
+            if (_showFmbBoundary) {
+              fetchedMarkers.add(
+                Marker(
+                  markerId: MarkerId('fmb_marker_$i'),
+                  position: labelPosition,
+                  icon: customIcon,
+                  infoWindow: InfoWindow(title: labelText),
+                  consumeTapEvents: true,
+                  anchor: const Offset(0.5, 0.5),
+                  onTap: () {
+                    _onFeatureTap(properties.kide);
+                  },
+                ),
+              );
+            }
+          }
+        }
+      }
+    }
+
+    _fmb_polygon = fetchedPolygons;
+    _fmb_marker = fetchedMarkers;
+    notifyListeners();
   }
 
   Future<void> fetchCadastralData(String selectedDistrict) async {
@@ -184,7 +283,10 @@ class MapViewModel extends ChangeNotifier {
 
       LatLng labelPosition = _findLabelPosition(polygonPoints);
       String labelText = properties.distName;
-      BitmapDescriptor customIcon = await MapUtils.createCustomIcon(labelText);
+      BitmapDescriptor customIcon = await MapUtils.createCustomIcon(
+        labelText,
+        Colors.white,
+      );
 
       fetchedMarkers.add(
         Marker(
@@ -245,6 +347,7 @@ class MapViewModel extends ChangeNotifier {
             String labelText = properties.surveyNo;
             BitmapDescriptor customIcon = await MapUtils.createCustomIcon(
               labelText,
+              Colors.green,
             );
             if (showCascadeBoundary) {
               fetchedMarkers.add(
@@ -309,6 +412,11 @@ class MapViewModel extends ChangeNotifier {
 
   void toggleCascade(bool value) {
     _showCascadeBoundary = value;
+    notifyListeners();
+  }
+
+  void toggleFMB(bool value) {
+    _showFmbBoundary = value;
     notifyListeners();
   }
 
