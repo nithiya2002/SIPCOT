@@ -106,6 +106,11 @@ class _AdminViewState extends State<AdminView> {
       appBar: AppBar(
         title: const Text('SIPCOT'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: _moveToSiteBoundary,
+            tooltip: "Add a new survey",
+          ),
           // Add site boundary focus button
           IconButton(
             icon: const Icon(Icons.center_focus_strong),
