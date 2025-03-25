@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import 'package:sipcot/viewModel/map_vm.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
+import 'MapCamera/image_capture_screen.dart';
+
 class TnDistrictMaps extends StatefulWidget {
   const TnDistrictMaps({super.key});
 
@@ -125,6 +127,18 @@ class _TnDistrictMapsState extends State<TnDistrictMaps> {
               mapViewModel.fetchCadastralData("SIPCOT");
             },
             tooltip: "Refresh Map Data",
+          ),
+          IconButton(
+            icon: const Icon(Icons.camera_alt),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ImageCaptureScreen(),
+                ),
+              );
+            },
+            tooltip: "Capture Image",
           ),
         ],
       ),
