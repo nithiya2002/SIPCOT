@@ -3,8 +3,10 @@ import 'package:video_player/video_player.dart';
 
 class MediaPreviewScreen extends StatefulWidget {
   final List<String> mediaUrls;
+  final String Park_name;
+  final int point_id;
 
-  const MediaPreviewScreen({super.key, required this.mediaUrls});
+  const MediaPreviewScreen({super.key,required this.Park_name,required this.point_id, required this.mediaUrls});
 
   @override
   _MediaPreviewScreenState createState() => _MediaPreviewScreenState();
@@ -91,7 +93,9 @@ class _MediaPreviewScreenState extends State<MediaPreviewScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Media Preview")),
+     appBar: AppBar(
+  title: Text("${widget.Park_name} - ID: ${widget.point_id}"),
+),
       body: Column(
         children: [
           // Horizontal scrollable media row with scrollbar

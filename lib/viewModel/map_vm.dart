@@ -591,7 +591,7 @@ class MapViewModel extends ChangeNotifier {
             String parkName = properties['Park_name'] ?? 'Unknown';
             String classification = properties['classification'] ?? 'Unknown';
             BitmapDescriptor markerIcon = await MapUtils.getTriangleMarker(
-              classification == 'agriculture' ? Colors.green : Colors.red,
+              pointId % 2 == 0 ? Colors.green : Colors.red,
             );
             List<String> mediaUrls = [];
             for (int i = 1; i <= 4; i++) {
@@ -616,7 +616,7 @@ class MapViewModel extends ChangeNotifier {
                 onTap: () {
                   // Navigate directly without using a closure
                   if (mediaUrls.isNotEmpty) {
-                    Get.to(() => MediaPreviewScreen(mediaUrls: mediaUrls));
+                    Get.to(() => MediaPreviewScreen(point_id: pointId,Park_name: parkName,mediaUrls: mediaUrls));
                   } else {
                     // Show a snackbar if no media is available
                     Get.snackbar(
