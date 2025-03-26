@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
@@ -64,6 +65,15 @@ class MapViewModel extends ChangeNotifier {
   // MARK: FMB Map
   Set<Polygon> _fmb_polygon = {};
   Set<Marker> _fmb_marker = {};
+ 
+   bool isDistanceCheckEnabled = false;
+  Set<Circle> distanceCircles = {};
+
+
+ Set<Marker> _highlightedFmbMarkers = {}; // New set to store highlighted markers
+  Set<Marker> get highlightedFmbMarkers => isDistanceCheckEnabled? _highlightedFmbMarkers:{};
+
+
   bool _showFmbBoundary = true;
   Set<Marker> get fmb_marker => _showFmbBoundary ? _fmb_marker : {};
   bool _isLoadingFMB = false;
@@ -173,6 +183,7 @@ class MapViewModel extends ChangeNotifier {
                   consumeTapEvents: true,
                   anchor: const Offset(0.5, 0.5),
                   onTap: () {
+                    log.i("---------------------------");
                     _onFeatureTap(properties.kide);
                   },
                 ),
@@ -297,6 +308,7 @@ class MapViewModel extends ChangeNotifier {
           consumeTapEvents: true,
           anchor: const Offset(0.5, 0.5),
           onTap: () {
+             log.i("----------------7777-----------");
             _onFeatureTap(properties.distName);
           },
         ),
@@ -418,6 +430,21 @@ class MapViewModel extends ChangeNotifier {
   void toggleFMB(bool value) {
     _showFmbBoundary = value;
     notifyListeners();
+  }
+
+  void toggleDistanceCheck(bool value) {
+ 
+      isDistanceCheckEnabled = value;
+      
+      // If turning off, reset markers and circles
+      if (!isDistanceCheckEnabled) {
+        distanceCircles.clear();
+
+         _highlightedFmbMarkers.clear();
+         
+      }
+      notifyListeners();
+ 
   }
 
   void toggleAnimation(bool value) {
@@ -614,6 +641,11 @@ class MapViewModel extends ChangeNotifier {
                 position: position,
                 icon: markerIcon,
                 onTap: () {
+                  if(isDistanceCheckEnabled){
+
+                     _handleMapTap(position);
+                        
+                  }else{
                   // Navigate directly without using a closure
                   if (mediaUrls.isNotEmpty) {
                     Get.to(() => MediaPreviewScreen(point_id: pointId,Park_name: parkName,mediaUrls: mediaUrls));
@@ -627,7 +659,7 @@ class MapViewModel extends ChangeNotifier {
                       colorText: Colors.white,
                       duration: Duration(seconds: 3),
                     );
-                  }
+                  }}
                 },
               ),
             );
@@ -699,4 +731,102 @@ class MapViewModel extends ChangeNotifier {
       notifyListeners(); // Notify listeners after updating the state
     }
   }
-}
+
+ void _handleMapTap(LatLng point) {
+    print("Map tapped at: $point");
+
+    if (isDistanceCheckEnabled) {
+      // Clear previous circles and highlighted markers
+      distanceCircles.clear();
+      _highlightedFmbMarkers.clear();
+
+      // Add new circle
+      distanceCircles.add(
+        Circle(
+          circleId: CircleId(point.toString()),
+          center: point,
+          radius: 400, // Radius in meters
+          fillColor: Colors.blue.withOpacity(0.3),
+          strokeWidth: 2,
+          strokeColor: Colors.blue,
+        ),
+      );
+
+      // Filter and highlight FMB markers within the radius
+      _filterFmbMarkersInRadius(point, 400);
+
+      // Notify UI to update
+      notifyListeners();
+    }
+  }
+
+  // Calculate distance between two points using Haversine formula
+  double _calculateDistance(LatLng point1, LatLng point2) {
+    const int earthRadius = 6371000; // meters
+    double lat1 = point1.latitude * math.pi / 180;
+    double lat2 = point2.latitude * math.pi / 180;
+    double lon1 = point1.longitude * math.pi / 180;
+    double lon2 = point2.longitude * math.pi / 180;
+
+    double dLat = lat2 - lat1;
+    double dLon = lon2 - lon1;
+
+    double a = math.sin(dLat / 2) * math.sin(dLat / 2) +
+        math.cos(lat1) * math.cos(lat2) *
+            math.sin(dLon / 2) * math.sin(dLon / 2);
+    double c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
+    double distance = earthRadius * c;
+
+    return distance;
+  }
+
+  void _filterFmbMarkersInRadius(LatLng centerPoint, double radius) async {
+    _highlightedFmbMarkers.clear();
+    List<Map<String, dynamic>> markersInRadius = [];
+
+    for (var marker in _fmb_marker) {
+      double distance = _calculateDistance(centerPoint, marker.position);
+      
+      if (distance <= radius) {
+        // Create a highlighted version of the marker
+        BitmapDescriptor highlightedIcon = await MapUtils.createCustomIcon(
+          marker.infoWindow.title ?? '',
+          Colors.red,
+        
+        );
+
+        Marker highlightedMarker = Marker(
+          markerId: MarkerId('highlighted_${marker.markerId.value}'),
+          position: marker.position,
+          icon: highlightedIcon,
+          infoWindow: marker.infoWindow,
+        );
+
+        _highlightedFmbMarkers.add(highlightedMarker);
+
+        // Log the marker details
+        markersInRadius.add({
+          'id': marker.markerId.value,
+          'position': {
+            'latitude': marker.position.latitude,
+            'longitude': marker.position.longitude
+          },
+          'name': marker.infoWindow.title,
+          'distance': distance
+        });
+      }
+    }
+
+    // Log the markers found within the radius
+    log.i('FMB Markers within $radius meters:');
+    for (var markerInfo in markersInRadius) {
+      log.i('''
+        Marker ID: ${markerInfo['id']}
+        Name: ${markerInfo['name']}
+        Distance: ${markerInfo['distance'].toStringAsFixed(2)} meters
+        Position: ${markerInfo['position']}
+      ''');
+    }
+
+    notifyListeners();
+  }}

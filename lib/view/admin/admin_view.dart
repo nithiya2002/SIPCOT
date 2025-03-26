@@ -17,6 +17,12 @@ class _AdminViewState extends State<AdminView> {
   late GoogleMapController mapController;
   bool _isInitialized = false;
 
+   bool _isDistanceCheckEnabled = false;
+  Set<Circle> _distanceCircles = {};
+
+
+  
+
   void _onMapCreated(
     GoogleMapController controller,
     MapViewModel mapviewmodel,
@@ -39,6 +45,7 @@ class _AdminViewState extends State<AdminView> {
     });
   }
 
+
   Future<void> _loadMapStyle() async {
     _mapStyle = await rootBundle.loadString('assets/localJSON/map_style.json');
   }
@@ -57,6 +64,9 @@ class _AdminViewState extends State<AdminView> {
       _isInitialized = true;
     });
   }
+
+
+
 
   @override
   void dispose() {
@@ -144,6 +154,7 @@ class _AdminViewState extends State<AdminView> {
                 onMapCreated: (GoogleMapController controller) {
                   _onMapCreated(controller, mapViewModel);
                 },
+               
                 mapType: MapType.satellite,
                 initialCameraPosition: CameraPosition(
                   target: initialCameraPosition!,
@@ -161,7 +172,10 @@ class _AdminViewState extends State<AdminView> {
                   ...mapViewModel.fieldPoints,
                   ...mapViewModel.cascadeMakers,
                   ...mapViewModel.fmb_marker,
+                  ...mapViewModel.highlightedFmbMarkers,
                 },
+                circles: mapViewModel.distanceCircles,
+
               );
             },
           ),
@@ -294,6 +308,21 @@ class _AdminViewState extends State<AdminView> {
                           ),
                           const SizedBox(width: 2),
                           Text('FMB Map', style: TextStyle(fontSize: 12)),
+                        ],
+                      ),
+
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Transform.scale(
+                            scale: 0.6,
+                            child: Switch.adaptive(
+                              value: mapViewModel.isDistanceCheckEnabled,
+                              onChanged: (value) { mapViewModel.toggleDistanceCheck(value);},
+                            ),
+                          ),
+                          const SizedBox(width: 2),
+                          Text('Distance Check', style: TextStyle(fontSize: 12)),
                         ],
                       ),
                     ],
