@@ -38,7 +38,9 @@ class MapViewModel extends ChangeNotifier {
   ];
   int _currentColorIndex = 0;
   Set<Marker> _fieldPoints = {};
+  Set<Marker> _addedFieldPoints = {};
   bool _showFieldPoints = true;
+  bool _addFieldPoints = true;
   bool _showSiteBoundary = true;
   bool _showCascadeBoundary = true;
   bool _showNewBoundary = true; // Add this for new boundary toggle
@@ -58,6 +60,8 @@ class MapViewModel extends ChangeNotifier {
   bool get showCascadeBoundary => _showCascadeBoundary;
   bool get isLoadingNewBoundary => _isLoadingNewBoundary;
   bool get isAnimating => _isAnimating;
+  Set<Marker> get addFieldPoint => _addFieldPoints ? _addedFieldPoints : {};
+  bool get showAddedFieldPoint => _addFieldPoints;
   Set<Marker> get fieldPoints => _showFieldPoints ? _fieldPoints : {};
   bool get showFieldPoints => _showFieldPoints;
 
@@ -309,6 +313,63 @@ class MapViewModel extends ChangeNotifier {
     _polygons = fetchedPolygons;
     _markers = fetchedMarkers;
     notifyListeners();
+  }
+  Future<void> addNewFieldPoint({
+    required LatLng location,
+    required String surveyNumber,
+    String? additionalDetails,
+  }) async {
+    try {
+      // Create a marker icon based on the type (you can modify this logic)
+      BitmapDescriptor markerIcon = await MapUtils.getTriangleMarker(Colors.blue);
+
+      // Create a new marker
+      Marker newMarker = Marker(
+        markerId: MarkerId('new_field_point_$surveyNumber'),
+        position: location,
+        icon: markerIcon,
+        infoWindow: InfoWindow(
+          title: 'Survey: $surveyNumber',
+          snippet: additionalDetails ?? '',
+        ),
+        onTap: () {
+          // Optional: Add functionality when the marker is tapped
+          // For now, you can leave this empty or add a snackbar with details
+          Get.snackbar(
+            'Field Point Details',
+            'Survey Number: $surveyNumber\n${additionalDetails ?? ''}',
+            snackPosition: SnackPosition.BOTTOM,
+          );
+        },
+      );
+
+      // Add the new marker to the field points
+      _fieldPoints.add(newMarker);
+
+      // Notify listeners to update the UI
+      notifyListeners();
+
+      // Optional: You might want to save this point to a persistent storage
+      // For example, you could use SharedPreferences or a local database
+      // This part depends on your specific requirements
+    } catch (e) {
+      log.e("Error adding new field point: $e");
+    }
+  }
+
+  List<dynamic> getSurveySuggestions() {
+    // Extract survey numbers from the cadastral data
+    Set<dynamic> surveyNumbers = {};
+    if (_polygon_cascade.isNotEmpty) {
+      for (var polygon in _polygon_cascade) {
+        // You'll need to modify this based on how your cadastral data is structured
+        // This assumes that the survey number is accessible via the markers
+        for (var marker in _cascade_markers) {
+          surveyNumbers.add(marker.infoWindow.title);
+        }
+      }
+    }
+    return surveyNumbers.toList();
   }
 
   void _processCadastralData(Map<String, dynamic> jsonData) async {
