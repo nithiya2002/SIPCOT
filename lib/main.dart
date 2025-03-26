@@ -47,7 +47,7 @@ class MyApp extends StatelessWidget {
                 child: GetMaterialApp(home: AdminView()),
               );
             case '/survey':
-              return const SurveyView();
+              return const GetMaterialApp(home: SurveyView());
             default:
               return const LoginView();
           }

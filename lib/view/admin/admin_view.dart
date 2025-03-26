@@ -125,6 +125,7 @@ class _AdminViewState extends State<AdminView> {
               mapViewModel.fetchSiteBoundary();
               mapViewModel.fetchFieldPoints();
               mapViewModel.fetchCadastralData("SIPCOT");
+              mapViewModel.fetchFMBData("SIPCOT");
             },
             tooltip: "Refresh Map Data",
           ),
