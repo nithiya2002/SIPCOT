@@ -173,6 +173,7 @@ class MapViewModel extends ChangeNotifier {
                   consumeTapEvents: true,
                   anchor: const Offset(0.5, 0.5),
                   onTap: () {
+                    log.i("44444 ---------- ");
                     _onFeatureTap(properties.kide);
                   },
                 ),
@@ -297,6 +298,7 @@ class MapViewModel extends ChangeNotifier {
           consumeTapEvents: true,
           anchor: const Offset(0.5, 0.5),
           onTap: () {
+            log.i("111111 ---------- ");
             _onFeatureTap(properties.distName);
           },
         ),
@@ -359,6 +361,7 @@ class MapViewModel extends ChangeNotifier {
                   consumeTapEvents: true,
                   anchor: const Offset(0.5, 0.5),
                   onTap: () {
+                    log.i("2222 ---------- ");
                     _onFeatureTap(properties.surveyNo);
                   },
                 ),
@@ -614,6 +617,7 @@ class MapViewModel extends ChangeNotifier {
                 position: position,
                 icon: markerIcon,
                 onTap: () {
+                  log.i("3333 ---------- ");
                   // Navigate directly without using a closure
                   if (mediaUrls.isNotEmpty) {
                     Get.to(() => MediaPreviewScreen(point_id: pointId,Park_name: parkName,mediaUrls: mediaUrls));
