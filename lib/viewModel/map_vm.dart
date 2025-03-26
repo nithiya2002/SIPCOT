@@ -217,7 +217,7 @@ class MapViewModel extends ChangeNotifier {
   }) async {
     try {
       // Create a marker icon based on the type (you can modify this logic)
-      BitmapDescriptor markerIcon = await MapUtils.getTriangleMarker(Colors.blue);
+      BitmapDescriptor markerIcon = await MapUtils.getTriangleMarker(Colors.white);
 
       // Create a new marker
       Marker newMarker = Marker(
