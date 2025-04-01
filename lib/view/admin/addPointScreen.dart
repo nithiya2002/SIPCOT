@@ -9,13 +9,13 @@ class AddPointScreen extends StatefulWidget {
   final List<dynamic> surveySuggestions;
 
   const AddPointScreen({
-    Key? key,
+    super.key,
     required this.selectedLocation,
-    required this.surveySuggestions
-  }) : super(key: key);
+    required this.surveySuggestions,
+  });
 
   @override
-  _AddPointScreenState createState() => _AddPointScreenState();
+  State<AddPointScreen> createState() => _AddPointScreenState();
 }
 
 class _AddPointScreenState extends State<AddPointScreen> {
@@ -38,9 +38,7 @@ class _AddPointScreenState extends State<AddPointScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Add New Point'),
-      ),
+      appBar: AppBar(title: Text('Add New Point')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -63,12 +61,15 @@ class _AddPointScreenState extends State<AddPointScreen> {
                   labelText: 'Select Survey Number',
                   border: OutlineInputBorder(),
                 ),
-                items: widget.surveySuggestions
-                    .map((survey) => DropdownMenuItem(
-                  value: survey.toString(),
-                  child: Text(survey.toString()),
-                ))
-                    .toList(),
+                items:
+                    widget.surveySuggestions
+                        .map(
+                          (survey) => DropdownMenuItem(
+                            value: survey.toString(),
+                            child: Text(survey.toString()),
+                          ),
+                        )
+                        .toList(),
                 onChanged: (value) {
                   setState(() {
                     _selectedSurveyNumber = value;
@@ -92,10 +93,7 @@ class _AddPointScreenState extends State<AddPointScreen> {
                 maxLines: 3,
               ),
               SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: _addNewPoint,
-                child: Text('Add Point'),
-              ),
+              ElevatedButton(onPressed: _addNewPoint, child: Text('Add Point')),
             ],
           ),
         ),

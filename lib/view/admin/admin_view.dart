@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:sipcot/viewModel/auth_view_model.dart';
@@ -114,23 +113,29 @@ class _AdminViewState extends State<AdminView> {
           IconButton(
             icon: const Icon(Icons.add),
             onPressed: () {
-              final mapViewModel = Provider.of<MapViewModel>(context, listen: false);
+              final mapViewModel = Provider.of<MapViewModel>(
+                context,
+                listen: false,
+              );
 
               // Get the current map camera position
               mapController.getVisibleRegion().then((bounds) {
                 LatLng centerPoint = LatLng(
-                    (bounds.northeast.latitude + bounds.southwest.latitude) / 2,
-                    (bounds.northeast.longitude + bounds.southwest.longitude) / 2
+                  (bounds.northeast.latitude + bounds.southwest.latitude) / 2,
+                  (bounds.northeast.longitude + bounds.southwest.longitude) / 2,
                 );
 
                 // Get survey number suggestions
-                List<dynamic> surveySuggestions = mapViewModel.getSurveySuggestions();
+                List<dynamic> surveySuggestions =
+                    mapViewModel.getSurveySuggestions();
 
                 // Navigate to the add point screen
-                Get.to(() => AddPointScreen(
-                  selectedLocation: centerPoint,
-                  surveySuggestions: surveySuggestions,
-                ));
+                Get.to(
+                  () => AddPointScreen(
+                    selectedLocation: centerPoint,
+                    surveySuggestions: surveySuggestions,
+                  ),
+                );
               });
             },
             tooltip: "Add a new survey",

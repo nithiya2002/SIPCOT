@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../model/location_model.dart';
-import '../../../utility/convert_text_icon.dart';
+import '../../../utility/widget/text_icon/convert_text_icon.dart';
 import 'map_button.dart';
 
 class ListMenuWidget extends StatelessWidget {

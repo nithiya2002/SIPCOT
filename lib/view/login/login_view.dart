@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:sipcot/view/login/widgets/name_text_field.dart';
+import 'package:sipcot/view/login/widgets/password_text_field.dart';
 import 'package:sipcot/viewModel/auth_view_model.dart';
 
 class LoginView extends StatefulWidget {
@@ -12,13 +14,15 @@ class LoginView extends StatefulWidget {
 class _LoginViewState extends State<LoginView> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
-  final _focusNode = FocusNode();
+  final _passwordController = TextEditingController();
+  final _nameController = TextEditingController();
+  final _emailFocus = FocusNode();
 
   @override
   void initState() {
     super.initState();
-    _focusNode.addListener(() {
-      if (!_focusNode.hasFocus) {
+    _emailFocus.addListener(() {
+      if (!_emailFocus.hasFocus) {
         _validateOnly();
       }
     });
@@ -27,7 +31,7 @@ class _LoginViewState extends State<LoginView> {
   @override
   void dispose() {
     _emailController.dispose();
-    _focusNode.dispose();
+    _emailFocus.dispose();
     super.dispose();
   }
 
@@ -56,10 +60,27 @@ class _LoginViewState extends State<LoginView> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              NameTextField(controller: _nameController),
+              /*  ReusableTextFormField(
+                labelText: "Name",
+                hintText: "Enter full Name",
+                controller: _nameController,
+                prefixIcon: Icons.agriculture_sharp,
+                keyboardType: TextInputType.name,
+                validator: (value) {
+                  return _loginVm.nameValidator()(value);
+                },
+                textInputAction: TextInputAction.next,
+                focusNode: _nameFocus,
+                onFieldSubmitted: (value) {
+                  _validateOnly();
+                },
+              ), */
+              const SizedBox(height: 16),
               TextFormField(
                 // autofocus: true,
                 controller: _emailController,
-                focusNode: _focusNode,
+                focusNode: _emailFocus,
                 textInputAction: TextInputAction.done,
                 keyboardType: TextInputType.emailAddress,
                 decoration: InputDecoration(
@@ -102,6 +123,8 @@ class _LoginViewState extends State<LoginView> {
                   authViewModel.error!,
                   style: const TextStyle(color: Colors.red),
                 ),
+              const SizedBox(height: 20),
+              PasswordTextField(controller: _passwordController),
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: authViewModel.isLoading ? null : _validateAndSubmit,

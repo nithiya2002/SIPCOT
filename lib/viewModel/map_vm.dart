@@ -38,9 +38,9 @@ class MapViewModel extends ChangeNotifier {
   ];
   int _currentColorIndex = 0;
   Set<Marker> _fieldPoints = {};
-  Set<Marker> _addedFieldPoints = {};
+  final Set<Marker> _addedFieldPoints = {};
   bool _showFieldPoints = true;
-  bool _addFieldPoints = true;
+  final bool _addFieldPoints = true;
   bool _showSiteBoundary = true;
   bool _showCascadeBoundary = true;
   bool _showNewBoundary = true; // Add this for new boundary toggle
@@ -314,6 +314,7 @@ class MapViewModel extends ChangeNotifier {
     _markers = fetchedMarkers;
     notifyListeners();
   }
+
   Future<void> addNewFieldPoint({
     required LatLng location,
     required String surveyNumber,
@@ -321,7 +322,9 @@ class MapViewModel extends ChangeNotifier {
   }) async {
     try {
       // Create a marker icon based on the type (you can modify this logic)
-      BitmapDescriptor markerIcon = await MapUtils.getTriangleMarker(Colors.blue);
+      BitmapDescriptor markerIcon = await MapUtils.getTriangleMarker(
+        Colors.blue,
+      );
 
       // Create a new marker
       Marker newMarker = Marker(
@@ -681,7 +684,13 @@ class MapViewModel extends ChangeNotifier {
                   log.i("3333 ---------- ");
                   // Navigate directly without using a closure
                   if (mediaUrls.isNotEmpty) {
-                    Get.to(() => MediaPreviewScreen(point_id: pointId,Park_name: parkName,mediaUrls: mediaUrls));
+                    Get.to(
+                      () => MediaPreviewScreen(
+                        point_id: pointId,
+                        Park_name: parkName,
+                        mediaUrls: mediaUrls,
+                      ),
+                    );
                   } else {
                     // Show a snackbar if no media is available
                     Get.snackbar(
