@@ -617,24 +617,10 @@ class MapViewModel extends ChangeNotifier {
       final prefs = await SharedPreferences.getInstance();
       String? savedData = prefs.getString('field_points_data');
       Map<String, dynamic> jsonData;
-      if (savedData == null) {
-        final response = await http.get(
-          Uri.parse(
-            'https://main.d35889sospji4x.amplifyapp.com/sipcot/data/villages/site_1_kangeyam/field_points.geojson',
-          ),
-        );
-        if (response.statusCode == 200) {
-          await prefs.setString('field_points_data', response.body);
-          jsonData = json.decode(response.body);
-        } else {
-          throw Exception(
-            "Failed to load field points: ${response.statusCode}",
-          );
-        }
-      } else {
+      if (savedData != null) {
         jsonData = json.decode(savedData);
+        await _processFieldPointsData(jsonData);
       }
-      await _processFieldPointsData(jsonData);
     } catch (e) {
       log.e("Error fetching field points: $e");
     }
