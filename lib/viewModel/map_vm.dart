@@ -617,10 +617,8 @@ class MapViewModel extends ChangeNotifier {
       final prefs = await SharedPreferences.getInstance();
       String? savedData = prefs.getString('field_points_data');
       Map<String, dynamic> jsonData;
-      if (savedData != null) {
-        jsonData = json.decode(savedData);
-        await _processFieldPointsData(jsonData);
-      }
+      jsonData = json.decode(savedData);
+      await _processFieldPointsData(jsonData);
     } catch (e) {
       log.e("Error fetching field points: $e");
     }
